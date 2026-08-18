@@ -156,6 +156,7 @@ function render(){
   const day=$('#day').value, genre=$('#genre').value;
   const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
   BUF=parseInt($('#buf').value); if(isNaN(BUF)||BUF<0)BUF=0;
+  try{localStorage.setItem('fringeBuf',String(BUF))}catch(e){}
   const cf=computeConflicts();
   let list=[];
   for(const r of DATA){
@@ -233,6 +234,7 @@ $('#file').addEventListener('change',e=>{
   rd.readAsText(f);
 });
 function defaultDay(){const n=new Date();const d=n.getDate();return (n.getFullYear()===2026&&n.getMonth()===7&&d>=17&&d<=22)?String(d):'all';}
+try{const b=localStorage.getItem('fringeBuf'); if(b!==null&&b!=='') $('#buf').value=b;}catch(e){}
 $('#day').value=defaultDay();
 render();
 }
