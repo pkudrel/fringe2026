@@ -4,6 +4,10 @@ A simple static page for browsing the **Edinburgh Festival Fringe 2026** program
 
 **Live:** https://pkudrel.github.io/fringe2026/
 
+<a href="https://pkudrel.github.io/fringe2026/"><img src="qr.png" alt="QR code — open the live site" width="180"></a>
+
+*Scan to open on your phone.*
+
 ## Features
 
 - **Search** — title, artist, venue, genre
