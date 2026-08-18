@@ -1,32 +1,35 @@
-# Fringe 2026 — przeglądarka spektakli
+# Fringe 2026 — show browser
 
-Prosta, statyczna strona do przeglądania programu **Edinburgh Festival Fringe 2026** i układania własnego planu. Bez backendu — działa na GitHub Pages i lokalnie.
+A simple static page for browsing the **Edinburgh Festival Fringe 2026** programme and building your own plan. No backend — runs on GitHub Pages and locally.
 
-**Na żywo:** https://pkudrel.github.io/fringe2026/
+**Live:** https://pkudrel.github.io/fringe2026/
 
-## Co potrafi
+## Features
 
-- **Wyszukiwarka** — tytuł, wykonawca, miejsce, gatunek
-- **Filtry** — dzień (całe okno 17–22 albo konkretny), gatunek, tylko TOP ★, tylko darmowe, tylko w planie
-- **Sortowanie** — klik w nagłówek kolumny (godzina sortuje chronologicznie)
-- **Kolumna „W planie ✔"** — Twój roboczy plan; zapisuje się lokalnie w przeglądarce (`localStorage`)
-- **💾 Zapisz plan / 📂 Wczytaj plan** — eksport/import planu jako `moj_plan.json` (przenośny między urządzeniami)
-- **TOP ★** — spektakle typowane przez krytykę (4–5★); dodatkowe ręczne rekomendacje w `EXTRA_TOP` w `index.html`
+- **Search** — title, artist, venue, genre
+- **Filters** — day (whole 17–22 window or a specific day), genre, TOP ★ only, free only, in-plan only
+- **Sorting** — click a column header (time sorts chronologically)
+- **"In plan ✔" column** — your working plan; saved locally in the browser (`localStorage`)
+- **💾 Save plan / 📂 Load plan** — export/import the plan as `my_plan.json` (portable between devices)
+- **Length column** — each show's running time
+- **Clash detection** — a planned show whose time overlaps another (15 min travel buffer) is highlighted with a **red row**
+- **TOP ★** — critically-tipped shows (4–5★); extra manual picks live in `EXTRA_TOP` in `index.html`
+- **EdFringe ↗** — quick link next to each title to search/buy on edfringe.com
 
-## Pliki
+## Files
 
-| Plik | Rola |
+| File | Role |
 |---|---|
-| `index.html` | Prezentacja (mała) — cały interfejs i logika |
-| `fringe_data.js` | Dane — `window.FRINGE_DATA = [...]` (spektakle grające 17–22 sierpnia) |
+| `index.html` | The presentation — all UI and logic |
+| `fringe_data.js` | The data — `window.FRINGE_DATA = [...]` (shows playing 17–22 August) |
 
-Oba muszą leżeć **w tym samym katalogu** (root repo). `index.html` ładuje `fringe_data.js` ścieżką względną.
+Both must sit in the **same directory** (repo root). `index.html` loads `fringe_data.js` via a relative path.
 
-## Uruchomienie
+## Running
 
 - **Online:** GitHub Pages (Settings → Pages → Deploy from a branch → `main` / `/root`).
-- **Lokalnie:** ze względu na ograniczenia `file://` w niektórych przeglądarkach, dwuplikowa wersja najlepiej działa serwowana (Pages) lub przez lokalny serwer (`python -m http.server`). Wersja jednoplikowa z danymi w środku otwiera się też prosto z dysku.
+- **Locally:** because of `file://` restrictions in some browsers, the two-file version works best served (Pages) or via a local server (`python -m http.server`).
 
-## Dane i zastrzeżenia
+## Data & disclaimer
 
-Dane pochodzą z oficjalnego programu Fringe 2026 (wersja drukowana). **Godziny i ceny mogły się zmienić** — ostateczne informacje i zakup biletów tylko w oficjalnej aplikacji **EdFringe** / na edfringe.com. Ceny zawierają opłatę £1.50 Fringe Box Office. Parser jest heurystyczny, więc przy ~2500 pozycjach mogą trafić się drobne nieścisłości.
+Data comes from the official Fringe 2026 programme (print edition). **Times and prices may have changed** — confirm and buy tickets only in the official **EdFringe** app / at edfringe.com. Prices include the £1.50 Fringe Box Office fee. The parser is heuristic, so among ~2,500 entries minor inaccuracies are possible.

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fringe 2026 — przeglądarka spektakli</title>
+<title>Fringe 2026 — show browser</title>
 <style>
 :root{--bg:#faf3e8;--card:#fff;--ink:#2b2b2b;--muted:#6b6b6b;--accent:#c05621;--accent2:#7a2e2e;--top:#f6c945;--line:#e7ddcd;--green:#1b5e20;--plan:#2c7a3f}
 *{box-sizing:border-box}
@@ -50,50 +50,50 @@ input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(
 </head>
 <body>
 <header>
-<h1>Edinburgh Fringe 2026 — spektakle</h1>
-<div class="sub">Okno 17–22 sierpnia • dane z oficjalnego programu (godziny/ceny mogą się zmienić — kupuj w apce EdFringe) • ceny zawierają opłatę £1.50</div>
+<h1>Edinburgh Fringe 2026 — shows</h1>
+<div class="sub">17–22 August window • data from the official programme (times/prices may change — buy in the EdFringe app) • prices include the £1.50 fee</div>
 </header>
 
 <div id="err">
-<b>Nie znaleziono danych.</b> Ten widok potrzebuje pliku <code>fringe_data.js</code> w tym samym folderze co ta strona.
+<b>Data not found.</b> This view needs the <code>fringe_data.js</code> file in the same folder as this page.
 </div>
 
 <div class="controls" id="ctrls">
-<input type="text" id="q" placeholder="Szukaj: tytuł, wykonawca, miejsce…">
+<input type="text" id="q" placeholder="Search: title, artist, venue…">
 <select id="day">
-<option value="all">Całe okno 17–22</option>
-<option value="17">17 (pon)</option>
-<option value="18">18 (wt) — dziś</option>
-<option value="19">19 (śr)</option>
-<option value="20">20 (czw)</option>
-<option value="21">21 (pt)</option>
-<option value="22">22 (sob)</option>
+<option value="all">Whole window 17–22</option>
+<option value="17">17 (Mon)</option>
+<option value="18">18 (Tue) — today</option>
+<option value="19">19 (Wed)</option>
+<option value="20">20 (Thu)</option>
+<option value="21">21 (Fri)</option>
+<option value="22">22 (Sat)</option>
 </select>
-<select id="genre"><option value="">Wszystkie gatunki</option></select>
-<label class="chip"><input type="checkbox" id="planOnly"> tylko w planie ✔</label>
-<label class="chip"><input type="checkbox" id="topOnly"> tylko TOP ★</label>
-<label class="chip"><input type="checkbox" id="freeOnly"> tylko darmowe</label>
-<button class="btn plan" id="save">💾 Zapisz plan</button>
-<button class="btn plan" id="load">📂 Wczytaj plan</button>
+<select id="genre"><option value="">All genres</option></select>
+<label class="chip"><input type="checkbox" id="planOnly"> in plan only ✔</label>
+<label class="chip"><input type="checkbox" id="topOnly"> TOP only ★</label>
+<label class="chip"><input type="checkbox" id="freeOnly"> free only</label>
+<button class="btn plan" id="save">💾 Save plan</button>
+<button class="btn plan" id="load">📂 Load plan</button>
 <input type="file" id="file" accept=".json,application/json" style="display:none">
-<button class="btn" id="reset">Wyczyść filtry</button>
+<button class="btn" id="reset">Clear filters</button>
 <span class="count" id="count"></span>
 </div>
-<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code>; <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie. <b>EdFringe ↗</b> przy tytule = skok do wyszukania/zakupu. <b style="color:#b00020">Czerwony wiersz</b> = spektakl w planie kolidujący godzinami z innym (bufor 15 min).</div>
+<div class="note" id="hint"><b>In plan ✔</b> column = your working plan (pre-seeded with my TOP picks). Click = add/remove. <b>💾 Save plan</b> downloads <code>my_plan.json</code>; <b>📂 Load plan</b> restores it. Click a header = sort. <b>EdFringe ↗</b> next to a title = jump to search/buy. <b style="color:#b00020">Red row</b> = a planned show whose time clashes with another (15 min buffer).</div>
 <div class="wrap">
 <table>
 <thead><tr>
-<th data-k="plan">W planie ✔ <span class="ar"></span></th>
+<th data-k="plan">In plan ✔ <span class="ar"></span></th>
 <th data-k="top">TOP <span class="ar"></span></th>
-<th data-k="g">Gatunek <span class="ar"></span></th>
-<th data-k="t">Tytuł <span class="ar"></span></th>
-<th data-k="c">Wykonawca <span class="ar"></span></th>
-<th data-k="sg">Podgatunki <span class="ar"></span></th>
-<th data-k="v">Miejsce <span class="ar"></span></th>
-<th data-k="days">Dni <span class="ar"></span></th>
-<th data-k="time">Godzina <span class="ar"></span></th>
-<th data-k="dur">Czas <span class="ar"></span></th>
-<th data-k="price">Cena <span class="ar"></span></th>
+<th data-k="g">Genre <span class="ar"></span></th>
+<th data-k="t">Title <span class="ar"></span></th>
+<th data-k="c">Artist <span class="ar"></span></th>
+<th data-k="sg">Subgenres <span class="ar"></span></th>
+<th data-k="v">Venue <span class="ar"></span></th>
+<th data-k="days">Days <span class="ar"></span></th>
+<th data-k="time">Time <span class="ar"></span></th>
+<th data-k="dur">Length <span class="ar"></span></th>
+<th data-k="price">Price <span class="ar"></span></th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -108,7 +108,7 @@ const $=s=>document.querySelector(s);
 function key(r){return r.t+'@@'+r.v}
 const BYKEY={};DATA.forEach(r=>BYKEY[key(r)]=r);
 const EXTRA_TOP=[
-  {m:'oxford alternotives', r:'A cappella z Oxfordu (ABBA/Queen/Adele) — Twój wybór'},
+  {m:'oxford alternotives', r:'Oxford a cappella (ABBA/Queen/Adele) — your pick'},
 ];
 function topOf(r){ if(r.top) return r.top; const tl=r.t.toLowerCase(); for(const e of EXTRA_TOP){ if(tl.includes(e.m)) return e.r; } return ''; }
 let plan={};
@@ -118,7 +118,7 @@ try{
   else plan=JSON.parse(saved)||{};
 }catch(e){ DATA.forEach(r=>{if(topOf(r))plan[key(r)]=1;}); }
 function savePlan(){try{localStorage.setItem('fringePlan',JSON.stringify(plan))}catch(e){}}
-const BUF=15; // minut buforu na dojście między spektaklami
+const BUF=15; // buffer minutes to travel between shows
 function tminG(t){const m=(t||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):9999}
 function computeConflicts(){
   const byDay={};const keysAny=new Set();
@@ -186,7 +186,7 @@ function render(){
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
-<td class="tt">${marked?'<span class="warn" title="Kolizja godzin w planie">⚠</span> ':''}${esc(r.t)}<a class="edf" href="https://www.edfringe.com/tickets?search=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Szukaj w EdFringe">EdFringe ↗</a></td>
+<td class="tt">${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}<a class="edf" href="https://www.edfringe.com/tickets?search=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
 <td>${esc(r.c)}</td>
 <td class="muted">${esc(r.sg)}</td>
 <td>${esc(r.v)}</td>
@@ -194,7 +194,7 @@ function render(){
 <td class="time">${esc(d.time)}</td>
 <td class="time">${fmtDur(d.dur)}</td>
 <td>${price}</td></tr>`}).join('');
-  $('#count').innerHTML='<span class="planpill">W planie: '+Object.keys(plan).length+'</span>  &nbsp; Pokazuję '+list.length+' z '+DATA.length;
+  $('#count').innerHTML='<span class="planpill">In plan: '+Object.keys(plan).length+'</span>  &nbsp; Showing '+list.length+' of '+DATA.length;
 }
 document.querySelectorAll('thead th[data-k]').forEach(th=>{
   th.addEventListener('click',e=>{ if(e.target.classList.contains('plan'))return;
@@ -209,11 +209,11 @@ $('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defau
 $('#save').addEventListener('click',()=>{
   const items=Object.keys(plan).map(k=>{const r=BYKEY[k];if(!r)return{key:k};
     const ds=Object.keys(r.s).map(Number).sort((a,b)=>a-b);
-    return{key:k,tytul:r.t,wykonawca:r.c,gatunek:r.g,miejsce:r.v,dni:ds.join(','),
-      godziny:ds.map(d=>d+':'+r.s[d][0]).join(' | ')};});
-  const out={app:'fringe2026-plan',zapisano:new Date().toISOString(),liczba:items.length,picks:plan,items:items};
+    return{key:k,title:r.t,artist:r.c,genre:r.g,venue:r.v,days:ds.join(','),
+      times:ds.map(d=>d+':'+r.s[d][0]).join(' | ')};});
+  const out={app:'fringe2026-plan',saved:new Date().toISOString(),count:items.length,picks:plan,items:items};
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moj_plan.json';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my_plan.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 });
 $('#load').addEventListener('click',()=>$('#file').click());
@@ -223,11 +223,11 @@ $('#file').addEventListener('change',e=>{
   rd.onload=()=>{try{
     const j=JSON.parse(rd.result);
     const p=j.picks||j.plan||(typeof j==='object'&&!j.items?j:null);
-    if(!p||typeof p!=='object'){alert('Nie rozpoznano formatu planu.');return;}
+    if(!p||typeof p!=='object'){alert('Unrecognised plan format.');return;}
     plan={};Object.keys(p).forEach(k=>plan[k]=1);
     savePlan();render();
-    alert('Wczytano plan: '+Object.keys(plan).length+' pozycji.');
-  }catch(err){alert('Błąd wczytywania: '+err.message);} $('#file').value='';};
+    alert('Plan loaded: '+Object.keys(plan).length+' items.');
+  }catch(err){alert('Load error: '+err.message);} $('#file').value='';};
   rd.readAsText(f);
 });
 function defaultDay(){const n=new Date();const d=n.getDate();return (n.getFullYear()===2026&&n.getMonth()===7&&d>=17&&d<=22)?String(d):'all';}
