@@ -42,7 +42,7 @@ td.time{white-space:nowrap;font-variant-numeric:tabular-nums}
 input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(--plan)}
 #err{margin:30px 18px;padding:16px 18px;background:#fff3cd;border:1px solid #e0c98a;border-radius:10px;color:#5a4500;display:none}
 .planpill{display:inline-block;background:var(--plan);color:#fff;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:bold}
-.edf{color:var(--accent);text-decoration:none;font-weight:bold;font-size:11px;margin-left:6px;white-space:nowrap}
+.edf{color:var(--accent);text-decoration:none;font-weight:bold;font-size:11px;display:inline-block;margin-top:2px;white-space:nowrap}
 .edf:hover{text-decoration:underline}
 .warn{color:#b00020;font-weight:bold}
 @media(max-width:800px){.controls{gap:6px}.count{width:100%;margin:0}}
@@ -189,7 +189,7 @@ function render(){
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
-<td class="tt">${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}<a class="edf" href="https://www.edfringe.com/tickets?search=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
+<td class="tt">${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}<br><a class="edf" href="https://www.edfringe.com/tickets/whats-on?search=true&amp;text=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
 <td>${esc(r.c)}</td>
 <td class="muted">${esc(r.sg)}</td>
 <td>${esc(r.v)}</td>
