@@ -204,7 +204,7 @@ document.querySelectorAll('thead th[data-k]').forEach(th=>{
 });
 $('#tb').addEventListener('change',e=>{if(e.target.classList.contains('plan')){const k=e.target.dataset.k;if(e.target.checked)plan[k]=1;else delete plan[k];savePlan();render();}});
 ['q','day','genre','planOnly','topOnly','freeOnly'].forEach(id=>$('#'+id).addEventListener('input',render));
-$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value='all';$('#genre').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
+$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defaultDay();$('#genre').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
 
 $('#save').addEventListener('click',()=>{
   const items=Object.keys(plan).map(k=>{const r=BYKEY[k];if(!r)return{key:k};
