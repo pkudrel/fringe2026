@@ -112,6 +112,8 @@ const EXTRA_TOP=[
   {m:'oxford alternotives', r:'Oxford a cappella (ABBA/Queen/Adele) — your pick'},
 ];
 function topOf(r){ if(r.top) return r.top; const tl=r.t.toLowerCase(); for(const e of EXTRA_TOP){ if(tl.includes(e.m)) return e.r; } return ''; }
+const GENRE_EDF={"Cabaret and variety":"CABARET","Children's shows":"CHILDRENS_SHOWS","Children’s shows":"CHILDRENS_SHOWS","Comedy":"COMEDY","Dance, physical theatre and circus":"CIRCUS","Events":"EVENTS","Exhibitions":"EXHIBITIONS","Music":"MUSIC","Musicals and opera":"OPERA","Spoken word":"SPOKEN_WORD","Theatre":"THEATRE"};
+function edfUrl(r){const gc=GENRE_EDF[r.g]||'';return 'https://www.edfringe.com/tickets/whats-on?search=true&amp;text='+encodeURIComponent(r.t)+(gc?'&amp;genres='+gc:'');}
 let plan={};
 try{
   const saved=localStorage.getItem('fringePlan');
@@ -189,7 +191,7 @@ function render(){
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
-<td class="tt">${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}<br><a class="edf" href="https://www.edfringe.com/tickets/whats-on?search=true&amp;text=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
+<td class="tt">${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}<br><a class="edf" href="${edfUrl(r)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
 <td>${esc(r.c)}</td>
 <td class="muted">${esc(r.sg)}</td>
 <td>${esc(r.v)}</td>
