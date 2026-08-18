@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fringe 2026 — przeglądarka spektakli</title>
+<style>
+:root{--bg:#faf3e8;--card:#fff;--ink:#2b2b2b;--muted:#6b6b6b;--accent:#c05621;--accent2:#7a2e2e;--top:#f6c945;--line:#e7ddcd;--green:#1b5e20;--plan:#2c7a3f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--accent2);color:#fff;padding:14px 18px}
+header h1{margin:0;font-size:19px}
+header .sub{opacity:.9;font-size:12px;margin-top:3px}
+.controls{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 18px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:8px;min-width:200px;font-size:14px}
+.controls select{padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:20px;background:#fff;cursor:pointer;user-select:none;font-size:13px}
+.chip input{margin:0}
+.count{margin-left:auto;color:var(--muted);font-size:13px;white-space:nowrap}
+.btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:13px}
+.btn:hover{background:#f3ece0}
+.btn.plan{border-color:var(--plan);color:var(--plan);font-weight:bold}
+.wrap{padding:0 18px 40px}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:13px}
+thead th{position:sticky;top:0;background:var(--accent);color:#fff;padding:8px 8px;text-align:left;cursor:pointer;white-space:nowrap;border-bottom:2px solid #a8481a}
+thead th.nosort{cursor:default}
+thead th .ar{opacity:.6;font-size:11px}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:#fff7ec}
+tr.inplan td{background:#eaf7ee}
+tr.inplan:hover td{background:#dff0e6}
+tr.top:not(.inplan) td{background:#fffbe9}
+.tag-top{display:inline-block;background:var(--top);color:#5a4500;font-weight:bold;border-radius:5px;padding:1px 6px;font-size:12px}
+.gtag{display:inline-block;background:#eee;border-radius:5px;padding:1px 6px;font-size:11px;color:#444;white-space:nowrap}
+.tt{font-weight:bold}
+.muted{color:var(--muted);font-size:12px}
+.free{color:var(--green);font-weight:bold}
+td.time{white-space:nowrap;font-variant-numeric:tabular-nums}
+.note{padding:8px 18px;color:var(--muted);font-size:12px}
+input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(--plan)}
+#err{margin:30px 18px;padding:16px 18px;background:#fff3cd;border:1px solid #e0c98a;border-radius:10px;color:#5a4500;display:none}
+.planpill{display:inline-block;background:var(--plan);color:#fff;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:bold}
+@media(max-width:800px){.controls{gap:6px}.count{width:100%;margin:0}}
+</style>
+</head>
+<body>
+<header>
+<h1>Edinburgh Fringe 2026 — spektakle</h1>
+<div class="sub">Okno 17–22 sierpnia • dane z oficjalnego programu (godziny/ceny mogą się zmienić — kupuj w apce EdFringe) • ceny zawierają opłatę £1.50</div>
+</header>
+
+<div id="err">
+<b>Nie znaleziono danych.</b> Ten widok potrzebuje pliku <code>fringe_data.js</code> w tym samym folderze co ta strona.
+</div>
+
+<div class="controls" id="ctrls">
+<input type="text" id="q" placeholder="Szukaj: tytuł, wykonawca, miejsce…">
+<select id="day">
+<option value="all">Całe okno 17–22</option>
+<option value="17">17 (pon)</option>
+<option value="18">18 (wt) — dziś</option>
+<option value="19">19 (śr)</option>
+<option value="20">20 (czw)</option>
+<option value="21">21 (pt)</option>
+<option value="22">22 (sob)</option>
+</select>
+<select id="genre"><option value="">Wszystkie gatunki</option></select>
+<label class="chip"><input type="checkbox" id="planOnly"> tylko w planie ✔</label>
+<label class="chip"><input type="checkbox" id="topOnly"> tylko TOP ★</label>
+<label class="chip"><input type="checkbox" id="freeOnly"> tylko darmowe</label>
+<button class="btn plan" id="save">💾 Zapisz plan</button>
+<button class="btn plan" id="load">📂 Wczytaj plan</button>
+<input type="file" id="file" accept=".json,application/json" style="display:none">
+<button class="btn" id="reset">Wyczyść filtry</button>
+<span class="count" id="count"></span>
+</div>
+<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code> (przenośny, trwały); <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie.</div>
+<div class="wrap">
+<table>
+<thead><tr>
+<th data-k="plan">W planie ✔ <span class="ar"></span></th>
+<th data-k="top">TOP <span class="ar"></span></th>
+<th data-k="g">Gatunek <span class="ar"></span></th>
+<th data-k="t">Tytuł <span class="ar"></span></th>
+<th data-k="c">Wykonawca <span class="ar"></span></th>
+<th data-k="sg">Podgatunki <span class="ar"></span></th>
+<th data-k="v">Miejsce <span class="ar"></span></th>
+<th data-k="days">Dni <span class="ar"></span></th>
+<th data-k="time">Godzina <span class="ar"></span></th>
+<th data-k="price">Cena <span class="ar"></span></th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+
+<script src="fringe_data.js"></script>
+<script>
+const DATA=(window.FRINGE_DATA)||null;
+if(!DATA){document.getElementById('err').style.display='block';document.getElementById('ctrls').style.display='none';document.getElementById('hint').style.display='none';}
+else{
+const $=s=>document.querySelector(s);
+function key(r){return r.t+'@@'+r.v}
+const BYKEY={};DATA.forEach(r=>BYKEY[key(r)]=r);
+const EXTRA_TOP=[
+  {m:'oxford alternotives', r:'A cappella z Oxfordu (ABBA/Queen/Adele) — Twój wybór'},
+];
+function topOf(r){ if(r.top) return r.top; const tl=r.t.toLowerCase(); for(const e of EXTRA_TOP){ if(tl.includes(e.m)) return e.r; } return ''; }
+let plan={};
+try{
+  const saved=localStorage.getItem('fringePlan');
+  if(saved===null){ DATA.forEach(r=>{if(topOf(r))plan[key(r)]=1;}); localStorage.setItem('fringePlan',JSON.stringify(plan)); }
+  else plan=JSON.parse(saved)||{};
+}catch(e){ DATA.forEach(r=>{if(topOf(r))plan[key(r)]=1;}); }
+function savePlan(){try{localStorage.setItem('fringePlan',JSON.stringify(plan))}catch(e){}}
+
+[...new Set(DATA.map(r=>r.g))].sort().forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;$('#genre').appendChild(o)});
+let sortK=null,sortDir=1;
+function derive(r,day){
+  if(day==='all'){
+    const ds=Object.keys(r.s).map(Number).sort((a,b)=>a-b);
+    const times=[...new Set(ds.map(d=>r.s[d][0]))];
+    const prices=[...new Set(ds.map(d=>r.s[d][1]).filter(Boolean))];
+    return {days:ds.join(','),time:times.sort().join(', '),price:prices.join(' / ')};
+  } else { if(!(day in r.s))return null; return {days:day,time:r.s[day][0],price:r.s[day][1]||''}; }
+}
+function tmin(t){const m=(t||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):9999}
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function escAttr(s){return (s||'').replace(/"/g,'&quot;')}
+function render(){
+  const q=$('#q').value.toLowerCase().trim();
+  const day=$('#day').value, genre=$('#genre').value;
+  const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
+  let list=[];
+  for(const r of DATA){
+    if(genre&&r.g!==genre)continue;
+    if(topOnly&&!topOf(r))continue;
+    if(planOnly&&!plan[key(r)])continue;
+    const d=derive(r,day); if(!d)continue;
+    if(freeOnly&&!/free/i.test(d.price))continue;
+    if(q){const hay=(r.t+' '+r.c+' '+r.v+' '+r.g+' '+r.sg).toLowerCase();if(!hay.includes(q))continue;}
+    list.push([r,d]);
+  }
+  if(sortK){
+    list.sort((A,B)=>{
+      let a,b;const[ra,da]=A,[rb,db]=B;
+      if(sortK==='plan'){a=plan[key(ra)]?1:0;b=plan[key(rb)]?1:0;}
+      else if(sortK==='top'){a=topOf(ra)?1:0;b=topOf(rb)?1:0;}
+      else if(sortK==='time'){a=tmin(da.time);b=tmin(db.time);}
+      else if(sortK==='days'){a=da.days;b=db.days;}
+      else if(sortK==='price'){a=da.price;b=db.price;}
+      else{a=(ra[sortK]||'').toLowerCase();b=(rb[sortK]||'').toLowerCase();}
+      return a<b?-1*sortDir:a>b?1*sortDir:0;
+    });
+  }
+  $('#tb').innerHTML=list.map(([r,d])=>{
+    const inp=!!plan[key(r)];const tp=topOf(r);
+    const price=d.price?(/free/i.test(d.price)?'<span class="free">'+esc(d.price)+'</span>':esc(d.price)):'<span class="muted">—</span>';
+    return `<tr class="${inp?'inplan':''} ${tp?'top':''}">
+<td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
+<td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
+<td><span class="gtag">${esc(r.g)}</span></td>
+<td class="tt">${esc(r.t)}</td>
+<td>${esc(r.c)}</td>
+<td class="muted">${esc(r.sg)}</td>
+<td>${esc(r.v)}</td>
+<td class="time">${esc(d.days)}</td>
+<td class="time">${esc(d.time)}</td>
+<td>${price}</td></tr>`}).join('');
+  $('#count').innerHTML='<span class="planpill">W planie: '+Object.keys(plan).length+'</span>  &nbsp; Pokazuję '+list.length+' z '+DATA.length;
+}
+document.querySelectorAll('thead th[data-k]').forEach(th=>{
+  th.addEventListener('click',e=>{ if(e.target.classList.contains('plan'))return;
+    const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1;}
+    document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');
+    th.querySelector('.ar').textContent=sortDir>0?'▲':'▼';render();});
+});
+$('#tb').addEventListener('change',e=>{if(e.target.classList.contains('plan')){const k=e.target.dataset.k;if(e.target.checked)plan[k]=1;else delete plan[k];savePlan();render();}});
+['q','day','genre','planOnly','topOnly','freeOnly'].forEach(id=>$('#'+id).addEventListener('input',render));
+$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value='all';$('#genre').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
+
+$('#save').addEventListener('click',()=>{
+  const items=Object.keys(plan).map(k=>{const r=BYKEY[k];if(!r)return{key:k};
+    const ds=Object.keys(r.s).map(Number).sort((a,b)=>a-b);
+    return{key:k,tytul:r.t,wykonawca:r.c,gatunek:r.g,miejsce:r.v,dni:ds.join(','),
+      godziny:ds.map(d=>d+':'+r.s[d][0]).join(' | ')};});
+  const out={app:'fringe2026-plan',zapisano:new Date().toISOString(),liczba:items.length,picks:plan,items:items};
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='moj_plan.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+});
+$('#load').addEventListener('click',()=>$('#file').click());
+$('#file').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+    const j=JSON.parse(rd.result);
+    const p=j.picks||j.plan||(typeof j==='object'&&!j.items?j:null);
+    if(!p||typeof p!=='object'){alert('Nie rozpoznano formatu planu.');return;}
+    plan={};Object.keys(p).forEach(k=>plan[k]=1);
+    savePlan();render();
+    alert('Wczytano plan: '+Object.keys(plan).length+' pozycji.');
+  }catch(err){alert('Błąd wczytywania: '+err.message);} $('#file').value='';};
+  rd.readAsText(f);
+});
+render();
+}
+</script>
+</body>
+</html>
