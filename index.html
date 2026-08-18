@@ -30,6 +30,8 @@ tbody tr:hover{background:#fff7ec}
 tr.inplan td{background:#eaf7ee}
 tr.inplan:hover td{background:#dff0e6}
 tr.top:not(.inplan) td{background:#fffbe9}
+tr.conflict td{background:#f8d0d4}
+tr.conflict:hover td{background:#f3bcc2}
 .tag-top{display:inline-block;background:var(--top);color:#5a4500;font-weight:bold;border-radius:5px;padding:1px 6px;font-size:12px}
 .gtag{display:inline-block;background:#eee;border-radius:5px;padding:1px 6px;font-size:11px;color:#444;white-space:nowrap}
 .tt{font-weight:bold}
@@ -81,8 +83,7 @@ input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(
 <button class="btn" id="reset">Wyczyść filtry</button>
 <span class="count" id="count"></span>
 </div>
-<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code>; <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie. <b>EdFringe ↗</b> przy tytule = skok do wyszukania/zakupu.</div>
-<div id="conf"></div>
+<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code>; <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie. <b>EdFringe ↗</b> przy tytule = skok do wyszukania/zakupu. <b style="color:#b00020">Czerwony wiersz</b> = spektakl w planie kolidujący godzinami z innym (bufor 15 min).</div>
 <div class="wrap">
 <table>
 <thead><tr>
@@ -156,11 +157,6 @@ function render(){
   const day=$('#day').value, genre=$('#genre').value;
   const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
   const cf=computeConflicts();
-  {const c=$('#conf');const days=Object.keys(cf.byDay).sort();
-   if(days.length){c.className='hascon';
-     c.innerHTML='<b>⚠ Kolizje godzin w planie</b> (bufor '+BUF+' min):'+days.map(function(dd){
-       return '<div class="cday"><b>'+dd+'.08:</b> '+cf.byDay[dd].pairs.map(function(p){return p[0].t+' „'+esc(BYKEY[p[0].k].t)+'” ⟷ '+p[1].t+' „'+esc(BYKEY[p[1].k].t)+'”';}).join(' &nbsp;•&nbsp; ')+'</div>';}).join('');
-   } else {c.className='nocon';c.innerHTML='✓ Brak kolizji godzin w planie (bufor '+BUF+' min).';}}
   let list=[];
   for(const r of DATA){
     if(genre&&r.g!==genre)continue;
@@ -187,7 +183,7 @@ function render(){
     const inp=!!plan[key(r)];const tp=topOf(r);
     const marked = day==='all' ? cf.keysAny.has(key(r)) : (cf.byDay[day] && cf.byDay[day].keys.has(key(r)));
     const price=d.price?(/free/i.test(d.price)?'<span class="free">'+esc(d.price)+'</span>':esc(d.price)):'<span class="muted">—</span>';
-    return `<tr class="${inp?'inplan':''} ${tp?'top':''}">
+    return `<tr class="${inp?'inplan':''} ${tp?'top':''} ${marked?'conflict':''}">
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
@@ -234,6 +230,8 @@ $('#file').addEventListener('change',e=>{
   }catch(err){alert('Błąd wczytywania: '+err.message);} $('#file').value='';};
   rd.readAsText(f);
 });
+function defaultDay(){const n=new Date();const d=n.getDate();return (n.getFullYear()===2026&&n.getMonth()===7&&d>=17&&d<=22)?String(d):'all';}
+$('#day').value=defaultDay();
 render();
 }
 </script>
