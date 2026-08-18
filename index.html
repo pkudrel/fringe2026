@@ -40,6 +40,13 @@ td.time{white-space:nowrap;font-variant-numeric:tabular-nums}
 input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(--plan)}
 #err{margin:30px 18px;padding:16px 18px;background:#fff3cd;border:1px solid #e0c98a;border-radius:10px;color:#5a4500;display:none}
 .planpill{display:inline-block;background:var(--plan);color:#fff;border-radius:14px;padding:3px 10px;font-size:12px;font-weight:bold}
+.edf{color:var(--accent);text-decoration:none;font-weight:bold;font-size:11px;margin-left:6px;white-space:nowrap}
+.edf:hover{text-decoration:underline}
+.warn{color:#b00020;font-weight:bold}
+#conf{margin:10px 18px 0;padding:10px 12px;border-radius:10px;font-size:13px;line-height:1.5}
+#conf.hascon{background:#fdeaea;border:1px solid #e6b3b3;color:#7a2020}
+#conf.nocon{background:#eaf7ee;border:1px solid #b7ddc2;color:#1b5e20}
+#conf .cday{margin-top:3px}
 @media(max-width:800px){.controls{gap:6px}.count{width:100%;margin:0}}
 </style>
 </head>
@@ -74,7 +81,8 @@ input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(
 <button class="btn" id="reset">Wyczyść filtry</button>
 <span class="count" id="count"></span>
 </div>
-<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code> (przenośny, trwały); <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie.</div>
+<div class="note" id="hint">Kolumna <b>W planie ✔</b> = Twój roboczy plan (na start moje TOP-y). Klik = dodaj/usuń. <b>💾 Zapisz plan</b> pobiera <code>moj_plan.json</code>; <b>📂 Wczytaj plan</b> go przywraca. Klik w nagłówek = sortowanie. <b>EdFringe ↗</b> przy tytule = skok do wyszukania/zakupu.</div>
+<div id="conf"></div>
 <div class="wrap">
 <table>
 <thead><tr>
@@ -112,6 +120,23 @@ try{
   else plan=JSON.parse(saved)||{};
 }catch(e){ DATA.forEach(r=>{if(topOf(r))plan[key(r)]=1;}); }
 function savePlan(){try{localStorage.setItem('fringePlan',JSON.stringify(plan))}catch(e){}}
+const BUF=15; // minut buforu na dojście między spektaklami
+function tminG(t){const m=(t||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):9999}
+function computeConflicts(){
+  const byDay={};const keysAny=new Set();
+  for(let dd=17;dd<=22;dd++){
+    const day=String(dd);const items=[];
+    for(const k in plan){const r=BYKEY[k];if(r&&(day in r.s)){items.push({k,start:tminG(r.s[day][0]),dur:(r.s[day][2]||60),t:r.s[day][0]});}}
+    items.sort((a,b)=>a.start-b.start);
+    const pairs=[];const keys=new Set();
+    for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
+      const A=items[i],B=items[j];
+      if(B.start < A.start+A.dur+BUF){pairs.push([A,B]);keys.add(A.k);keys.add(B.k);keysAny.add(A.k);keysAny.add(B.k);}
+    }
+    if(pairs.length)byDay[day]={pairs,keys};
+  }
+  return {byDay,keysAny};
+}
 
 [...new Set(DATA.map(r=>r.g))].sort().forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;$('#genre').appendChild(o)});
 let sortK=null,sortDir=1;
@@ -130,6 +155,12 @@ function render(){
   const q=$('#q').value.toLowerCase().trim();
   const day=$('#day').value, genre=$('#genre').value;
   const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
+  const cf=computeConflicts();
+  {const c=$('#conf');const days=Object.keys(cf.byDay).sort();
+   if(days.length){c.className='hascon';
+     c.innerHTML='<b>⚠ Kolizje godzin w planie</b> (bufor '+BUF+' min):'+days.map(function(dd){
+       return '<div class="cday"><b>'+dd+'.08:</b> '+cf.byDay[dd].pairs.map(function(p){return p[0].t+' „'+esc(BYKEY[p[0].k].t)+'” ⟷ '+p[1].t+' „'+esc(BYKEY[p[1].k].t)+'”';}).join(' &nbsp;•&nbsp; ')+'</div>';}).join('');
+   } else {c.className='nocon';c.innerHTML='✓ Brak kolizji godzin w planie (bufor '+BUF+' min).';}}
   let list=[];
   for(const r of DATA){
     if(genre&&r.g!==genre)continue;
@@ -154,12 +185,13 @@ function render(){
   }
   $('#tb').innerHTML=list.map(([r,d])=>{
     const inp=!!plan[key(r)];const tp=topOf(r);
+    const marked = day==='all' ? cf.keysAny.has(key(r)) : (cf.byDay[day] && cf.byDay[day].keys.has(key(r)));
     const price=d.price?(/free/i.test(d.price)?'<span class="free">'+esc(d.price)+'</span>':esc(d.price)):'<span class="muted">—</span>';
     return `<tr class="${inp?'inplan':''} ${tp?'top':''}">
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
-<td class="tt">${esc(r.t)}</td>
+<td class="tt">${marked?'<span class="warn" title="Kolizja godzin w planie">⚠</span> ':''}${esc(r.t)}<a class="edf" href="https://www.edfringe.com/tickets?search=${encodeURIComponent(r.t)}" target="_blank" rel="noopener" title="Szukaj w EdFringe">EdFringe ↗</a></td>
 <td>${esc(r.c)}</td>
 <td class="muted">${esc(r.sg)}</td>
 <td>${esc(r.v)}</td>
