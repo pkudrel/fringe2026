@@ -80,6 +80,7 @@ tr.detail .thumb{width:82px;height:82px;flex:0 0 auto;border-radius:6px;object-f
 <label class="chip"><input type="checkbox" id="topOnly"> TOP only ★</label>
 <label class="chip"><input type="checkbox" id="freeOnly"> free only</label>
 <label class="chip">clash buffer <input type="number" id="buf" value="15" min="0" max="120" step="5" style="width:56px;padding:4px;border:1px solid var(--line);border-radius:6px"> min</label>
+<label class="chip"><input type="checkbox" id="expandAll"> expand all ▾</label>
 <button class="btn plan" id="save">💾 Save plan</button>
 <button class="btn plan" id="load">📂 Load plan</button>
 <input type="file" id="file" accept=".json,application/json" style="display:none">
@@ -164,6 +165,7 @@ function render(){
   const q=$('#q').value.toLowerCase().trim();
   const day=$('#day').value, genre=$('#genre').value;
   const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
+  const expAll=$('#expandAll').checked;
   BUF=parseInt($('#buf').value); if(isNaN(BUF)||BUF<0)BUF=0;
   try{localStorage.setItem('fringeBuf',String(BUF))}catch(e){}
   const cf=computeConflicts();
@@ -192,20 +194,21 @@ function render(){
   }
   $('#tb').innerHTML=list.map(([r,d])=>{
     const inp=!!plan[key(r)];const tp=topOf(r);
+    const isOpen = expAll || expanded.has(key(r));
     const marked = day==='all' ? cf.keysAny.has(key(r)) : (cf.byDay[day] && cf.byDay[day].keys.has(key(r)));
     const price=d.price?(/free/i.test(d.price)?'<span class="free">'+esc(d.price)+'</span>':esc(d.price)):'<span class="muted">—</span>';
     return `<tr class="${inp?'inplan':''} ${tp?'top':''} ${marked?'conflict':''}">
 <td style="text-align:center"><input type="checkbox" class="plan" data-k="${escAttr(key(r))}" ${inp?'checked':''}></td>
 <td>${tp?`<span class="tag-top" title="${escAttr(tp)}">★</span>`:''}</td>
 <td><span class="gtag">${esc(r.g)}</span></td>
-<td class="tt"><span class="tt-toggle" data-tk="${escAttr(key(r))}"><span class="exp">${expanded.has(key(r))?'▾':'▸'}</span>${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}</span><br><a class="edf" href="${edfUrl(r)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
+<td class="tt"><span class="tt-toggle" data-tk="${escAttr(key(r))}"><span class="exp">${isOpen?'▾':'▸'}</span>${marked?'<span class="warn" title="Time clash in plan">⚠</span> ':''}${esc(r.t)}</span><br><a class="edf" href="${edfUrl(r)}" target="_blank" rel="noopener" title="Search on EdFringe">EdFringe ↗</a></td>
 <td>${esc(r.c)}</td>
 <td class="muted">${esc(r.sg)}</td>
 <td>${esc(r.v)}</td>
 <td class="time">${esc(d.days)}</td>
 <td class="time">${esc(d.time)}</td>
 <td class="time">${fmtDur(d.dur)}</td>
-<td>${price}</td></tr>${expanded.has(key(r))?`<tr class="detail"><td colspan="11"><div class="det">${r.img?`<img class="thumb" src="${escAttr(r.img)}" loading="lazy" alt="">`:''}<div>${esc(r.d||'—')}</div></div></td></tr>`:''}`}).join('');
+<td>${price}</td></tr>${isOpen?`<tr class="detail"><td colspan="11"><div class="det">${r.img?`<img class="thumb" src="${escAttr(r.img)}" loading="lazy" alt="">`:''}<div>${esc(r.d||'—')}</div></div></td></tr>`:''}`}).join('');
   $('#count').innerHTML='<span class="planpill">In plan: '+Object.keys(plan).length+'</span>  &nbsp; Showing '+list.length+' of '+DATA.length;
 }
 document.querySelectorAll('thead th[data-k]').forEach(th=>{
@@ -218,8 +221,8 @@ $('#tb').addEventListener('change',e=>{if(e.target.classList.contains('plan')){c
 $('#tb').addEventListener('click',e=>{const t=e.target.closest('.tt-toggle');if(t){const k=t.dataset.tk;if(expanded.has(k))expanded.delete(k);else expanded.add(k);render();}});
 let _deb;const debounced=()=>{clearTimeout(_deb);_deb=setTimeout(render,140);};
 $('#q').addEventListener('input',debounced);
-['day','genre','planOnly','topOnly','freeOnly','buf'].forEach(id=>$('#'+id).addEventListener('input',render));
-$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defaultDay();$('#genre').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;$('#buf').value='15';BUF=15;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
+['day','genre','planOnly','topOnly','freeOnly','buf','expandAll'].forEach(id=>$('#'+id).addEventListener('input',render));
+$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defaultDay();$('#genre').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;$('#expandAll').checked=false;$('#buf').value='15';BUF=15;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
 
 $('#save').addEventListener('click',()=>{
   const items=Object.keys(plan).map(k=>{const r=BYKEY[k];if(!r)return{key:k};
