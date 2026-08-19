@@ -49,6 +49,8 @@ input[type=checkbox].plan{transform:scale(1.25);cursor:pointer;accent-color:var(
 .tt-toggle:hover{text-decoration:underline}
 .exp{color:var(--muted);font-size:11px;margin-right:2px}
 tr.detail td{background:#fbf6ec;font-weight:normal;color:#333;font-size:12.5px;line-height:1.5;padding:8px 12px 12px 34px}
+tr.detail .det{display:flex;gap:12px;align-items:flex-start}
+tr.detail .thumb{width:82px;height:82px;flex:0 0 auto;border-radius:6px;object-fit:cover;background:#eee;border:1px solid var(--line)}
 @media(max-width:800px){.controls{gap:6px}.count{width:100%;margin:0}}
 </style>
 </head>
@@ -203,7 +205,7 @@ function render(){
 <td class="time">${esc(d.days)}</td>
 <td class="time">${esc(d.time)}</td>
 <td class="time">${fmtDur(d.dur)}</td>
-<td>${price}</td></tr>${expanded.has(key(r))?`<tr class="detail"><td colspan="11">${esc(r.d||'—')}</td></tr>`:''}`}).join('');
+<td>${price}</td></tr>${expanded.has(key(r))?`<tr class="detail"><td colspan="11"><div class="det">${r.img?`<img class="thumb" src="${escAttr(r.img)}" loading="lazy" alt="">`:''}<div>${esc(r.d||'—')}</div></div></td></tr>`:''}`}).join('');
   $('#count').innerHTML='<span class="planpill">In plan: '+Object.keys(plan).length+'</span>  &nbsp; Showing '+list.length+' of '+DATA.length;
 }
 document.querySelectorAll('thead th[data-k]').forEach(th=>{
