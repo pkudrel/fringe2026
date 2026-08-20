@@ -76,12 +76,7 @@ tr.detail .thumb{width:82px;height:82px;flex:0 0 auto;border-radius:6px;object-f
 <option value="22">22 (Sat)</option>
 </select>
 <select id="genre"><option value="">All genres</option></select>
-<select id="within">
-<option value="">Starts within: any</option>
-<option value="1">Starts ≤ 1h</option>
-<option value="2">Starts ≤ 2h</option>
-<option value="3">Starts ≤ 3h</option>
-</select>
+<label class="chip"><input type="checkbox" id="soonOn"> starts in <input type="number" id="soonFrom" value="30" min="0" max="720" step="15" style="width:52px;padding:4px;border:1px solid var(--line);border-radius:6px">–<input type="number" id="soonTo" value="120" min="0" max="720" step="15" style="width:52px;padding:4px;border:1px solid var(--line);border-radius:6px"> min from now</label>
 <label class="chip"><input type="checkbox" id="planOnly"> in plan only ✔</label>
 <label class="chip"><input type="checkbox" id="topOnly"> TOP only ★</label>
 <label class="chip"><input type="checkbox" id="freeOnly"> free only</label>
@@ -172,7 +167,8 @@ function render(){
   const day=$('#day').value, genre=$('#genre').value;
   const planOnly=$('#planOnly').checked, topOnly=$('#topOnly').checked, freeOnly=$('#freeOnly').checked;
   const expAll=$('#expandAll').checked;
-  const withinH=parseInt($('#within').value)||0;
+  const soonOn=$('#soonOn').checked;
+  const soonFrom=parseInt($('#soonFrom').value), soonTo=parseInt($('#soonTo').value);
   const _n=new Date(), nowMin=_n.getHours()*60+_n.getMinutes();
   BUF=parseInt($('#buf').value); if(isNaN(BUF)||BUF<0)BUF=0;
   try{localStorage.setItem('fringeBuf',String(BUF))}catch(e){}
@@ -184,7 +180,7 @@ function render(){
     if(planOnly&&!plan[key(r)])continue;
     const d=derive(r,day); if(!d)continue;
     if(freeOnly&&!/free/i.test(d.price))continue;
-    if(withinH){const st=tmin(d.time); if(st<nowMin||st>nowMin+withinH*60)continue;}
+    if(soonOn){const off=tmin(d.time)-nowMin; const lo=isNaN(soonFrom)?0:soonFrom, hi=isNaN(soonTo)?9999:soonTo; if(off<lo||off>hi)continue;}
     if(q){const hay=(r.t+' '+r.c+' '+r.v+' '+r.g+' '+r.sg).toLowerCase();if(!hay.includes(q))continue;}
     list.push([r,d]);
   }
@@ -230,8 +226,8 @@ $('#tb').addEventListener('change',e=>{if(e.target.classList.contains('plan')){c
 $('#tb').addEventListener('click',e=>{const t=e.target.closest('.tt-toggle');if(t){const k=t.dataset.tk;if(expanded.has(k))expanded.delete(k);else expanded.add(k);render();}});
 let _deb;const debounced=()=>{clearTimeout(_deb);_deb=setTimeout(render,140);};
 $('#q').addEventListener('input',debounced);
-['day','genre','within','planOnly','topOnly','freeOnly','buf','expandAll'].forEach(id=>$('#'+id).addEventListener('input',render));
-$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defaultDay();$('#genre').value='';$('#within').value='';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;$('#expandAll').checked=false;$('#buf').value='15';BUF=15;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
+['day','genre','soonOn','soonFrom','soonTo','planOnly','topOnly','freeOnly','buf','expandAll'].forEach(id=>$('#'+id).addEventListener('input',render));
+$('#reset').addEventListener('click',()=>{$('#q').value='';$('#day').value=defaultDay();$('#genre').value='';$('#soonOn').checked=false;$('#soonFrom').value='30';$('#soonTo').value='120';$('#planOnly').checked=false;$('#topOnly').checked=false;$('#freeOnly').checked=false;$('#expandAll').checked=false;$('#buf').value='15';BUF=15;sortK=null;sortDir=1;document.querySelectorAll('thead th .ar').forEach(a=>a.textContent='');render();});
 
 $('#save').addEventListener('click',()=>{
   const items=Object.keys(plan).map(k=>{const r=BYKEY[k];if(!r)return{key:k};
